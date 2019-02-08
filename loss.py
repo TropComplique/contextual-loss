@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 
@@ -57,9 +58,9 @@ class ContextualLoss(nn.Module):
         d_tilde = d / (d_min + epsilon_from_the_paper)
         # it has shape [N, M]
 
-        w = torch.exp((1.0 - d_tilde) / self.h)
+        w = torch.exp((1.0 - d_tilde) / self.h)  # shape [N, M]
         cx_ij = w / (torch.sum(w, dim=1, keepdim=True) + EPSILON)
-        # they have shape [N, M]
+        # it has shape [N, M]
 
         max_i_cx_ij, _ = torch.max(cx_ij, dim=0)  # shape [M]
         cx = torch.mean(max_i_cx_ij, dim=0)  # shape []
@@ -86,7 +87,7 @@ def extract_patches(features, size, stride):
     n, m = patches.size()[1:3]
     M = n * m
 
-    patches = patches.permute(1, 2, 0, 3, 4).view(M, C, size, size)
+    patches = patches.permute(1, 2, 0, 3, 4).contiguous().view(M, C, size, size)
     norms = patches.view(M, -1).norm(p=2, dim=1)  # shape [M]
     patches /= (norms.view(M, 1, 1, 1) + EPSILON)
 
