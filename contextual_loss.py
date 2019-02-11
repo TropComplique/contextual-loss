@@ -22,12 +22,13 @@ class ContextualLoss(nn.Module):
     def __init__(self, y, size, stride, h):
         """
         Arguments:
-            y: a float tensor with shape [C, A, B].
+            y: a float tensor with shape [1, C, A, B].
             size, stride: integers, parameters of used patches.
             h: a float number.
         """
         super(ContextualLoss, self).__init__()
 
+        y = y.squeeze(0)
         y_mu = torch.mean(y, dim=[1, 2], keepdim=True)  # shape [C, 1, 1]
         y = extract_patches(y - y_mu, size, stride)  # shape [M, C, size, size]
 
@@ -40,10 +41,11 @@ class ContextualLoss(nn.Module):
     def forward(self, x):
         """
         Arguments:
-            x: a float tensor with shape [C, H, W].
+            x: a float tensor with shape [1, C, H, W].
         Returns:
             a float tensor with shape [].
         """
+        x = x.squeeze(0)
         x = x - self.y_mu  # shape [C, H, W]
 
         similarity = cosine_similarity(x, self.y, self.stride)  # shape [N, M]
