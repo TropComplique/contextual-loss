@@ -55,7 +55,7 @@ class ContextualLoss(nn.Module):
 
         if self.distance == 'cosine':
             similarity = cosine_similarity(x, self.y, self.stride)
-            d = 1.0 - similarity
+            d = torch.clamp(1.0 - similarity, min=0.0, max=2.0)
         else:
             d = squared_l2_distance(x, self.y, self.stride)
             d = torch.clamp(d, min=0.0)
