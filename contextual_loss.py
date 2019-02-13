@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 # a small value
-EPSILON = 1e-8
+EPSILON = 1e-10
 
 
 class ContextualLoss(nn.Module):
@@ -71,7 +71,7 @@ class ContextualLoss(nn.Module):
         d_tilde = d / (d_min + epsilon_from_the_paper)
         # it has shape [N, M]
 
-        w = torch.exp((1.0 - d_tilde) / self.h)  # shape [N, M]
+        w = torch.exp(-d_tilde/self.h)  # shape [N, M]
         cx_ij = w / (torch.sum(w, dim=1, keepdim=True) + EPSILON)
         # it has shape [N, M]
 

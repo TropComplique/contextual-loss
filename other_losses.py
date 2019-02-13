@@ -62,6 +62,8 @@ class TotalVariationLoss(nn.Module):
             a float tensor with shape [].
         """
         h, w = x.size()[2:]
-        h_tv = torch.pow(x[:, :, 1:, :] - x[:, :, :(h - 1), :], 2)
-        w_tv = torch.pow(x[:, :, :, 1:] - x[:, :, :, :(w - 1)], 2)
+        # h_tv = torch.pow(x[:, :, 1:, :] - x[:, :, :(h - 1), :], 2)
+        # w_tv = torch.pow(x[:, :, :, 1:] - x[:, :, :, :(w - 1)], 2)
+        h_tv = torch.abs(x[:, :, 1:, :] - x[:, :, :(h - 1), :])
+        w_tv = torch.abs(x[:, :, :, 1:] - x[:, :, :, :(w - 1)])
         return h_tv.mean([0, 1, 2, 3]) + w_tv.mean([0, 1, 2, 3])
