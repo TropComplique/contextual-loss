@@ -5,7 +5,11 @@ from torchvision.models import vgg19
 
 class Extractor(nn.Module):
 
-    def __init__(self):
+    def __init__(self, layers):
+        """
+        Arguments:
+            layers: a list of strings, names of layers to output.
+        """
         super(Extractor, self).__init__()
 
         self.model = vgg19(pretrained=True).eval().features
@@ -14,8 +18,8 @@ class Extractor(nn.Module):
 
         # normalization
         mean = torch.Tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-        self.mean = nn.Parameter(data=mean, requires_grad=False)
         std = torch.Tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+        self.mean = nn.Parameter(data=mean, requires_grad=False)
         self.std = nn.Parameter(data=std, requires_grad=False)
 
         names = []
@@ -35,8 +39,11 @@ class Extractor(nn.Module):
                 i += 1
                 j = 1
 
-        # feature names
+        # names of all features
         self.names = names
+
+        # names of features to extract
+        self.layers = list(set(layers))
 
     def forward(self, x):
         """
@@ -49,8 +56,17 @@ class Extractor(nn.Module):
         features = {}
         x = (x - self.mean)/self.std
 
+        i = 0  # number of features extracted
+        num_features = len(self.layers)
+
         for n, m in zip(self.names, self.model):
             x = m(x)
-            features[n] = x
+
+            if n in self.layers:
+                features[n] = x
+                i += 1
+
+            if i == num_features:
+                break
 
         return features
